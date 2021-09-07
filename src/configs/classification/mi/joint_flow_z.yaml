@@ -5,8 +5,8 @@ training:
   iter_log: 1000
   iter_save: 100
   exp_id: "mi_flow_mlp_z"
-  out_dir: "/path/to/f-dre/src/classification/results/"
-  data_dir: "/path/to/f-dre/data/"
+  out_dir: "/disk_c/han/f-dre/src/classification/results/"
+  data_dir: "/disk_c/han/f-dre/data/"
 
 data:
   dataset: "MI"
@@ -14,10 +14,12 @@ data:
   x_space: true
   input_size: 40
   perc: 1.0
-  mus: [0, 3]
+  mus: [-1, 1]
   class_idx: 20
   num_workers: 4
-  rho: 0.9
+  mi: 20
+  # rho: 0.9 # calculating rho from base mi given above
+  
 
 model:
   name: "flow_mlp"

@@ -1,0 +1,37 @@
+- training:
+    batch_size: 128
+    data_dir: /Users/seungwook.han@ibm.com/Documents/Projects/cob/f-dre/data/
+    exp_id: joint_gmm_flow_mlp_perc1.0_alpha0.007
+    iter_log: 1000
+    iter_save: 100
+    n_epochs: 200
+    ngpu: 1
+    out_dir: /Users/seungwook.han@ibm.com/Documents/Projects/cob/f-dre/src/classification/results/
+- data:
+    class_idx: 20
+    dataset: GMM
+    input_size: 2
+    mus:
+    - 0
+    - 3
+    num_workers: 4
+    perc: 1.0
+    subset: false
+    x_space: true
+- model:
+    batch_norm: true
+    dropout: 0.1
+    h_dim: 200
+    in_dim: 2
+    n_classes: 2
+    name: flow_mlp
+    spectral_norm: true
+- optim:
+    amsgrad: false
+    beta1: 0.9
+    lr: 0.0001
+    optimizer: Adam
+    weight_decay: 1.0e-06
+- loss:
+    alpha: 0.007
+    name: joint
