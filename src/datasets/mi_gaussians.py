@@ -200,7 +200,7 @@ class GaussiansForMI(Dataset):
         self.p_mu = self.config.data.mus[0]
         self.q_mu = self.config.data.mus[1]
         self.mi = float(config.data.mi)
-        self.rho = self.mi_to_rho(self.mi) 
+        self.rho = self.mi_to_rho() # Uses saved self.mi variable above
         print('instantiating dataset with dim={}, rho={}, MI={}, p_mu={}, q_mu={}'.format(self.dim, self.rho, self.mi, self.p_mu, self.q_mu))
 
         fpath = os.path.join(self.data_dir, 'gaussians_mi', '{}_d{}_rho{}.npz'.format(self.split, self.dim, self.rho))
