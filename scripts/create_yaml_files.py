@@ -16,8 +16,8 @@ for alpha in alphas:
     'iter_log': 1000,
     'iter_save': 100,
     'exp_id': exp_id,
-    'out_dir': "/atlas/u/kechoi/multi-fairgen/src/classification/results/",
-    'data_dir': "/atlas/u/kechoi/multi-fairgen/data/"
+    'out_dir': "/Users/seungwook.han@ibm.com/Documents/Projects/cob/f-dre/src/classification/results/",
+    'data_dir': "/Users/seungwook.han@ibm.com/Documents/Projects/cob/f-dre/data/"
     }},
     {'data': {
     'dataset': "GMM",
@@ -53,7 +53,7 @@ for alpha in alphas:
 
     # filenames
     fname = exp_id = 'joint_flow_mlp_perc1.0_alpha{}.yaml'.format(alpha)
-    fpath = os.path.join('/atlas/u/kechoi/multi-fairgen/src/configs/classification/gmm/joint_sweep/', fname)
+    fpath = os.path.join('/Users/seungwook.han@ibm.com/Documents/Projects/cob/f-dre/src/configs/classification/gmm/joint_sweep/', fname)
 
     with open(fpath, 'w') as file:
         documents = yaml.dump(dict_file, file)
