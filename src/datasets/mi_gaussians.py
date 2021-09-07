@@ -3,6 +3,8 @@ from PIL import Image
 import numpy as np
 import torch
 from torch.utils.data import Dataset, Subset, TensorDataset
+from torch.distributions.multivariate_normal import MultivariateNormal
+from scipy.linalg import block_diag
 from .looping import LoopingDataset
 
 
@@ -85,12 +87,20 @@ class MIGaussians(Dataset):
         self.type = typ
         self.type in ['bias', 'ref']
 
-        self.rho = config.data.rho 
-        self.mi = self.rho_to_mi()
-        print('instantiating dataset with dim={}, rho={}, MI={}'.format(self.dim, self.rho, self.mi))
+        self.p_mu = self.config.data.mus[0]
+        self.q_mu = self.config.data.mus[1]
+        self.mi = float(config.data.mi)
+        self.rho = self.mi_to_rho(self.mi) 
+        print('instantiating dataset with dim={}, rho={}, MI={}, p_mu={}, q_mu={}'.format(self.dim, self.rho, self.mi, self.p_mu, self.q_mu))
 
-        fpath = os.path.join(self.data_dir, 'gaussians_mi', '{}_d{}_rho{}.npz'.format(self.split, self.dim, self.rho))
-        record = np.load(fpath)
+        fpath = os.path.join(self.data_dir, 'gaussians_mi', '{}_d{}_rho{}_pmu{}_qmu{}.npz'.format(self.split, self.dim, self.rho, self.p_mu, self.q_mu))
+        try:
+            record = np.load(fpath)
+        except:
+            data_dir = os.path.join(self.data_dir, 'gaussians_mi')
+            if not os.path.exists(data_dir):
+                os.makedirs(data_dir)
+            record = self.generate_data()
 
         if self.type == 'bias':
             data = record['p']
@@ -102,6 +112,21 @@ class MIGaussians(Dataset):
             to_keep = int(len(data) * self.perc)
             data = data[0:to_keep]
         self.data = torch.from_numpy(data).float()
+    
+    def generate_data(self):
+        # let's just do this to make our lives easier atm
+        fpath = os.path.join(self.data_dir, 'gaussians_mi', '{}_d{}_rho{}_pmu{}_qmu{}.npz'.format(self.split, self.dim, self.rho, self.p_mu, self.q_mu))
+        if self.split == 'train':
+            x, y = self.sample_data(100000)
+        elif self.split == 'val':
+            x, y = self.sample_data(100000)
+        else:
+            x, y = self.sample_data(100000)
+        x = x.data.numpy()
+        y = y.data.numpy()
+        np.savez(fpath, **{'p': x, 'q': y})
+        
+        return {'p': x, 'q': y}
 
     def rho_to_mi(self):
         """Obtain the ground truth mutual information from rho."""
@@ -111,7 +136,33 @@ class MIGaussians(Dataset):
 
     def mi_to_rho(self):
         """Obtain the rho for Gaussian give ground truth mutual information."""
-        return np.sqrt(1 - np.exp(-2.0 / self.dim * self.mi))
+        # return np.sqrt(1 - np.exp(-2.0 / self.dim * self.mi))
+        x = (4 * self.mi) / self.dim
+        return np.sqrt(1 - np.exp(-x))
+
+    def sample_data(self, batch_size=128):
+        """Generate samples from a correlated Gaussian distribution."""
+        
+        mu1 = torch.empty((self.dim), dtype=torch.float32).fill_(self.p_mu)
+        mu2 = torch.empty((self.dim), dtype=torch.float32).fill_(self.q_mu)
+
+        scale_p = block_diag(*[[[1, self.rho], [self.rho, 1]] for _ in range(self.dim // 2)])
+        scale_q = torch.eye(self.dim, dtype=torch.float32)
+
+        p_dist = MultivariateNormal(
+            loc=mu1,
+            covariance_matrix=scale_p,
+        )
+
+        q_dist = MultivariateNormal(
+            loc=mu2,
+            covariance_matrix=scale_q,
+        )
+
+        p_samples = p_dist.sample((batch_size,))
+        q_samples = q_dist.sample((batch_size,))
+
+        return p_samples, q_samples
 
     def sample_from_joint(self, n):
         # HACK: dim // 2
@@ -145,9 +196,12 @@ class GaussiansForMI(Dataset):
         self.perc = config.data.perc
         self.dim = config.data.input_size
         self.split = split
-        self.rho = config.data.rho 
-        self.mi = self.rho_to_mi()
-        print('instantiating dataset with dim={}, rho={}, MI={}'.format(self.dim, self.rho, self.mi))
+
+        self.p_mu = self.config.data.mus[0]
+        self.q_mu = self.config.data.mus[1]
+        self.mi = float(config.data.mi)
+        self.rho = self.mi_to_rho(self.mi) 
+        print('instantiating dataset with dim={}, rho={}, MI={}, p_mu={}, q_mu={}'.format(self.dim, self.rho, self.mi, self.p_mu, self.q_mu))
 
         fpath = os.path.join(self.data_dir, 'gaussians_mi', '{}_d{}_rho{}.npz'.format(self.split, self.dim, self.rho))
         try:
@@ -163,13 +217,13 @@ class GaussiansForMI(Dataset):
 
     def generate_data(self):
         # let's just do this to make our lives easier atm
-        fpath = os.path.join(self.data_dir, 'gaussians_mi', '{}_d{}_rho{}.npz'.format(self.split, self.dim, self.rho))
+        fpath = os.path.join(self.data_dir, 'gaussians_mi', '{}_d{}_rho{}_pmu{}_qmu{}.npz'.format(self.split, self.dim, self.rho, self.p_mu, self.q_mu))
         if self.split == 'train':
-            x, y = self.sample_data(80000)
+            x, y = self.sample_data(100000)
         elif self.split == 'val':
-            x, y = self.sample_data(10000)
+            x, y = self.sample_data(100000)
         else:
-            x, y = self.sample_data(10000)
+            x, y = self.sample_data(100000)
         x = x.data.numpy()
         y = y.data.numpy()
         np.savez(fpath, **{'p': x, 'q': y})
@@ -178,26 +232,35 @@ class GaussiansForMI(Dataset):
 
     def sample_data(self, batch_size=128):
         """Generate samples from a correlated Gaussian distribution."""
-        # dividing self.dim by 2 bc we'll be concatenating these two together
-        x, eps = torch.chunk(
-            torch.randn(batch_size, 2 * self.dim//2), 2, dim=1)
-        y = self.rho * x + torch.sqrt(torch.tensor(1. - self.rho**2).float()) * eps
+        
+        mu1 = torch.empty((self.dim), dtype=torch.float32).fill_(self.p_mu)
+        mu2 = torch.empty((self.dim), dtype=torch.float32).fill_(self.q_mu)
 
-        # marginal (biased)
-        rand_i = torch.randperm(len(y))
-        p = torch.cat([x, y[rand_i]], dim=-1)
-        # joint (ref)
-        q = torch.cat([x, y], dim=-1)
+        scale_p = block_diag(*[[[1, self.rho], [self.rho, 1]] for _ in range(self.dim // 2)])
+        scale_q = torch.eye(self.dim, dtype=torch.float32)
 
-        return p, q
+        p_dist = MultivariateNormal(
+            loc=mu1,
+            covariance_matrix=scale_p,
+        )
 
-    def sample_from_joint(self, n):
-        # HACK: dim // 2
-        x, eps = torch.chunk(torch.randn(n, 2 * self.dim//2), 2, dim=1)
-        y = self.rho * x + torch.sqrt(torch.tensor(1. - self.rho**2).float()) * eps
-        # joint (ref)
-        q = torch.cat([x, y], dim=-1)
-        return q
+        q_dist = MultivariateNormal(
+            loc=mu2,
+            covariance_matrix=scale_q,
+        )
+
+        p_samples = p_dist.sample((batch_size,))
+        q_samples = q_dist.sample((batch_size,))
+
+        return p_samples, q_samples
+
+    # def sample_from_joint(self, n):
+    #     # HACK: dim // 2
+    #     x, eps = torch.chunk(torch.randn(n, 2 * self.dim//2), 2, dim=1)
+    #     y = self.rho * x + torch.sqrt(torch.tensor(1. - self.rho**2).float()) * eps
+    #     # joint (ref)
+    #     q = torch.cat([x, y], dim=-1)
+    #     return q
 
     def rho_to_mi(self):
         """Obtain the ground truth mutual information from rho."""
