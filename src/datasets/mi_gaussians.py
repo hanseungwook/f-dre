@@ -236,7 +236,7 @@ class GaussiansForMI(Dataset):
         mu1 = torch.empty((self.dim), dtype=torch.float32).fill_(self.p_mu)
         mu2 = torch.empty((self.dim), dtype=torch.float32).fill_(self.q_mu)
 
-        scale_p = block_diag(*[[[1, self.rho], [self.rho, 1]] for _ in range(self.dim // 2)])
+        scale_p = torch.from_numpy(block_diag(*[[[1, self.rho], [self.rho, 1]] for _ in range(self.dim // 2)])).float()
         scale_q = torch.eye(self.dim, dtype=torch.float32)
 
         p_dist = MultivariateNormal(
