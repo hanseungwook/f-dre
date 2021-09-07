@@ -12,9 +12,9 @@ data:
   dataset: "MI"
   subset: false
   x_space: true
-  input_size: 40
+  input_size: 40 # n_dims
   perc: 1.0
-  mus: [-1, 1]
+  mus: [0, 0]
   class_idx: 20
   num_workers: 4
   mi: 20

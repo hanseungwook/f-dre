@@ -119,9 +119,9 @@ class MIGaussians(Dataset):
         if self.split == 'train':
             x, y = self.sample_data(100000)
         elif self.split == 'val':
-            x, y = self.sample_data(100000)
+            x, y = self.sample_data(10000)
         else:
-            x, y = self.sample_data(100000)
+            x, y = self.sample_data(10000)
         x = x.data.numpy()
         y = y.data.numpy()
         np.savez(fpath, **{'p': x, 'q': y})
@@ -213,7 +213,7 @@ class GaussiansForMI(Dataset):
             record = self.generate_data()
         self.p = torch.from_numpy(record['p'])
         self.q = torch.from_numpy(record['q'])
-        self.joint = self.q
+        self.joint = self.p
 
     def generate_data(self):
         # let's just do this to make our lives easier atm
@@ -221,9 +221,9 @@ class GaussiansForMI(Dataset):
         if self.split == 'train':
             x, y = self.sample_data(100000)
         elif self.split == 'val':
-            x, y = self.sample_data(100000)
+            x, y = self.sample_data(10000)
         else:
-            x, y = self.sample_data(100000)
+            x, y = self.sample_data(10000)
         x = x.data.numpy()
         y = y.data.numpy()
         np.savez(fpath, **{'p': x, 'q': y})
@@ -270,7 +270,9 @@ class GaussiansForMI(Dataset):
 
     def mi_to_rho(self):
         """Obtain the rho for Gaussian give ground truth mutual information."""
-        return np.sqrt(1 - np.exp(-2.0 / self.dim * self.mi))
+        # return np.sqrt(1 - np.exp(-2.0 / self.dim * self.mi))
+        x = (4 * self.mi) / self.dim
+        return np.sqrt(1 - np.exp(-x))
     
     def __getitem__(self, index):
         q = self.q[index].float()  # joint 

@@ -130,8 +130,11 @@ class MIClassifier(BaseTrainer):
                 samples = self.test_dataloader.dataset.joint.dataset
                 samples = torch.stack([x[0] for x in samples]).to(self.device)
         logits, probas = self.model(samples)
-        mi = utils.logsumexp_1p(-logits) - utils.logsumexp_1p(logits)
-        return mi.mean().item()
+        # mi = utils.logsumexp_1p(-logits) - utils.logsumexp_1p(logits)
+        # return mi.mean().item()
+        self.model.train()
+        return logits.mean().item()
+        
 
     def train_epoch(self, epoch):
         # get meters ready
