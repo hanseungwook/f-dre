@@ -178,6 +178,7 @@ class Gaussian(object):
         self.dim = self.input_size
         self.label_size = 1
 
+        print('instantiating dataset with dim={}, p_mu={}, p_scale={}, q_mu={}. q_scale={}'.format(self.dim, self.p_mu, self.p_scale, self.q_mu, self.q_scale))
         fpath = os.path.join(self.config.training.data_dir, 'gmm')
     
         try:
