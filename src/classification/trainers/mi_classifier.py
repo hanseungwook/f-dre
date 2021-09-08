@@ -133,7 +133,7 @@ class MIClassifier(BaseTrainer):
         # mi = utils.logsumexp_1p(-logits) - utils.logsumexp_1p(logits)
         # return mi.mean().item()
         self.model.train()
-        return logits.mean().item()
+        return -1.0 * logits.mean().item()
         
 
     def train_epoch(self, epoch):
