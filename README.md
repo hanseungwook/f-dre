@@ -61,6 +61,13 @@ python3 main.py  \
          --restore_file=/flows/results/{directory with flow checkpoint} \
          --ni
 ```
+
+#### Joint training of flow + DRE for MI estimation
+```
+CUDA_VISIBLE_DEVICES=1 python3 main.py --classify --config classification/mi/joint_flow_z.yaml  --exp_id mi40_mu0_d160 --ni --mi
+```
+
+
 ## For KMM/KLIEP experiments:
 Each of these experiments is self-contained within one Jupyter notebook. Simply run the corresponding notebook cell by cell in `/notebooks`.
 
