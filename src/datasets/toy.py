@@ -234,6 +234,8 @@ class Gaussian(object):
             covariance_matrix=scale_q,
         )
 
+        self.base_dist = p_dist
+
         p_samples = p_dist.sample((batch_size,))
         q_samples = q_dist.sample((batch_size,))
 
