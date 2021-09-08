@@ -3,6 +3,7 @@ import numpy as np
 import torch
 import torch.distributions as dist
 from torch.distributions import Normal
+from torch.distributions.multivariate_normal import MultivariateNormal
 from torch.utils.data import Dataset, TensorDataset
 from .looping import LoopingDataset
 
@@ -164,18 +165,27 @@ class Gaussian(object):
         self.config = config
         self.split = split
         self.type = typ
+        self.data_dir = config.training.data_dir
         assert self.type in ['bias', 'ref']
 
         self.p_mu = self.config.data.mus[0]
+        self.p_scale = self.config.data.scales[0]
         self.q_mu = self.config.data.mus[1]
+        self.q_scale = self.config.data.scales[1]
 
         self.perc = config.data.perc
         self.input_size = config.data.input_size
+        self.dim = self.input_size
         self.label_size = 1
-        self.base_dist = Normal(self.config.data.mus[0], 1)  # bias
 
         fpath = os.path.join(self.config.training.data_dir, 'gmm')
-        data = np.load(os.path.join(fpath, 'gmm_p{}_q{}.npz'.format(self.p_mu, self.q_mu)))
+    
+        try:
+            data = np.load(os.path.join(fpath, 'gmm_p{}_{}_q{}_{}.npz'.format(self.p_mu, self.p_scale, self.q_mu, self.q_scale)))
+        except:
+            if not os.path.exists(fpath):
+                os.makedirs(fpath)
+            data = self.generate_data()
 
         if self.type == 'bias':
             data = data['p']
@@ -184,15 +194,49 @@ class Gaussian(object):
 
         # train/val/test split
         if split == 'train':
-            data = data[0:40000]
+            data = data[0:80000]
         elif split == 'val':
-            data = data[40000:45000]
+            data = data[80000:90000]
         else:
-            data = data[45000:]
+            data = data[90000:100000]
         if self.type == 'ref' and self.split != 'val':  # keep val same
             to_keep = int(len(data) * self.perc)
             data = data[0:to_keep]
         self.data = torch.from_numpy(data).float()
+
+    def generate_data(self):
+        # let's just do this to make our lives easier atm
+        fpath = os.path.join(self.data_dir, 'gmm', 'gmm_p{}_{}_q{}_{}.npz'.format(self.p_mu, self.p_scale, self.q_mu, self.q_scale))
+        x, y = self.sample_data(100000)
+
+        x = x.data.numpy()
+        y = y.data.numpy()
+        np.savez(fpath, **{'p': x, 'q': y})
+        
+        return {'p': x, 'q': y}
+    
+    def sample_data(self, batch_size=128):
+        """Generate samples from a correlated Gaussian distribution."""
+        mu1 = torch.empty((self.dim), dtype=torch.float32).fill_(self.p_mu)
+        mu2 = torch.empty((self.dim), dtype=torch.float32).fill_(self.q_mu)
+
+        scale_p = torch.eye(self.dim) * float(self.p_scale)
+        scale_q = torch.eye(self.dim) * float(self.q_scale)
+
+        p_dist = MultivariateNormal(
+            loc=mu1,
+            covariance_matrix=scale_p,
+        )
+
+        q_dist = MultivariateNormal(
+            loc=mu2,
+            covariance_matrix=scale_q,
+        )
+
+        p_samples = p_dist.sample((batch_size,))
+        q_samples = q_dist.sample((batch_size,))
+
+        return p_samples, q_samples
 
     def __len__(self):
         return len(self.data)

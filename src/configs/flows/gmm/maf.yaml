@@ -5,13 +5,14 @@ training:
   log_interval: 500
   iter_save: 100
   exp_id: "gmm_flow"
-  out_dir: "/path/to/f-dre/src/flows/results"
-  data_dir: "/path/to/f-dre/data/"
+  out_dir: "/disk_c/han/f-dre/src/flows/results"
+  data_dir: "/disk_c/han/f-dre/data/"
 
 data:
   dataset: "GMM_flow"
   perc: 1.0
-  mus: [0, 3]
+  mus: [0.08, 0.15]
+  scales: [0.1, 1.0]
   input_size: 2
   num_workers: 4
   flip_toy_var_order: true
@@ -20,7 +21,7 @@ dre:
   alpha: 0.06
 
 sampling:
-  n_samples: 50000
+  n_samples: 100000
   # sir: 1000
 
 model:
