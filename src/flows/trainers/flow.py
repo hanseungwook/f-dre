@@ -218,6 +218,7 @@ class Flow(object):
                     args.out_dir, 'model_state.pt'))
             # save best state
             if eval_logprob > best_eval_logprob:
+                print('Saving best and visualizing samples')
                 best_eval_logprob = eval_logprob
                 print('saving model at epoch {}'.format(epoch))
                 torch.save({
