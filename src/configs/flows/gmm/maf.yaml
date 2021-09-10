@@ -11,7 +11,7 @@ training:
 data:
   dataset: "GMM_flow"
   perc: 1.0
-  mus: [0.08, 0.15]
+  mus: [0.0, 0.0]
   scales: [0.1, 1.0]
   input_size: 2
   num_workers: 4

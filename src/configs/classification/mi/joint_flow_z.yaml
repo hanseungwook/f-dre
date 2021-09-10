@@ -1,6 +1,6 @@
 training:
   batch_size: 128
-  n_epochs: 200
+  n_epochs: 1000
   ngpu: 1
   iter_log: 1000
   iter_save: 100
@@ -12,12 +12,12 @@ data:
   dataset: "MI"
   subset: false
   x_space: true
-  input_size: 40 # n_dims
+  input_size: 320 # n_dims
   perc: 1.0
-  mus: [0, 0]
+  mus: [-0.5, 0.5]
   class_idx: 20
   num_workers: 4
-  mi: 20
+  mi: 80
   # rho: 0.9 # calculating rho from base mi given above
   
 
@@ -25,7 +25,7 @@ model:
   name: "flow_mlp"
   spectral_norm: true
   batch_norm: true
-  in_dim: 40
+  in_dim: 320
   h_dim: 200
   dropout: 0.1
   n_classes: 1
