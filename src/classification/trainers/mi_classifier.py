@@ -308,7 +308,11 @@ class MIClassifier(BaseTrainer):
             # test classifier
             t = tqdm(iter(loader), leave=False, total=len(loader))
             for i, (z_ref, z_biased) in enumerate(t):
+                zeros = torch.zeros_like(z_ref)
+                z_ref = torch.cat([z_ref, zeros], dim=-1)
+                z_biased = torch.cat([z_biased, zeros], dim=-1)
                 z = torch.cat([z_ref, z_biased])
+
                 y = torch.cat([
                     torch.ones(z_ref.shape[0]),
                     torch.zeros(z_biased.shape[0])
