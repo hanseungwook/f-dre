@@ -256,8 +256,8 @@ class GaussiansForMI(Dataset):
             scale=self.q_scale,
         )
 
-        p_samples = p_dist.sample((batch_size,))
-        q_samples = q_dist.sample((batch_size,))
+        p_samples = p_dist.sample((batch_size,)).unsqueeze(-1)
+        q_samples = q_dist.sample((batch_size,)).unsqueeze(-1)
 
         true_kl = torch.distributions.kl_divergence(p_dist, q_dist).mean()
         self.mi = true_kl
