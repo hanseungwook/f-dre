@@ -167,7 +167,7 @@ class MIClassifier(BaseTrainer):
             y = y[idx].to(self.device).long()
             
             # NOTE: here, biased (y=0) and reference (y=1) # Only use first axis
-            logits, _ = self.model()
+            logits, _ = self.model(z)
             # Zero out z's second dimension to make sure loss is 0 on that axis
             if self.config.loss.name == 'joint':
                 loss = self.loss(self.model, z, logits, y, self.config.loss.alpha)
