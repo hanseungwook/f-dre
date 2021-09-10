@@ -33,6 +33,8 @@ class FlowClassifier(nn.Module):
     z, _ = self.flow.forward(x)
 
     z = z[:, 0].unsqueeze(-1)
+    import IPython
+    IPython.embed()
     # then train classifier
     z = F.relu(self.fc1(z))
     z = F.relu(self.fc2(z))
