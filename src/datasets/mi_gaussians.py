@@ -92,8 +92,8 @@ class MIGaussians(Dataset):
         self.p_scale = self.config.data.scales[0]
         self.q_mu = self.config.data.mus[1]
         self.q_scale = self.config.data.scales[1]
-        self.mi = float(config.data.mi)
-        self.rho = self.mi_to_rho(self.mi) 
+        # self.mi = float(config.data.mi)
+        # self.rho = self.mi_to_rho(self.mi) 
         print('instantiating dataset with dim={}, p_mu={}, p_scale={}, q_mu={}, q_scale={}'.format(self.dim, self.p_mu, self.p_scale, self.q_mu, self.q_scale))
 
         fpath = os.path.join(self.data_dir, 'gaussians_mi', '{}_d{}_pmu{}_pscale{}_qmu{}_qscale{}.npz'.format(self.split, self.dim, self.p_mu, self.p_scale, self.q_mu, self.q_scale))
