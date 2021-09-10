@@ -81,7 +81,7 @@ def parse_args_and_config():
         # only for training
         wandb.init(
             project='f-dre',
-            entity=getpass.getuser(),
+            entity='sswwhan',
             name=args.exp_id, 
             config=new_config, 
             sync_tensorboard=False,
