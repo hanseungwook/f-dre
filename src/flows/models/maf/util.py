@@ -10,8 +10,8 @@ def create_masks(input_size, hidden_size, n_hidden, input_order='sequential', in
     if input_order == 'sequential':
         degrees += [torch.arange(input_size)] if input_degrees is None else [input_degrees]
         for _ in range(n_hidden + 1):
-            degrees += [torch.arange(hidden_size) % (input_size - 1)]
-        degrees += [torch.arange(input_size) % input_size - 1] if input_degrees is None else [input_degrees % input_size - 1]
+            degrees += [torch.arange(hidden_size) % (input_size)]
+        degrees += [torch.arange(input_size) % input_size] if input_degrees is None else [input_degrees % input_size]
 
     elif input_order == 'random':
         degrees += [torch.randperm(input_size)] if input_degrees is None else [input_degrees]
