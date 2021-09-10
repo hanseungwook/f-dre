@@ -125,6 +125,8 @@ class MIClassifier(BaseTrainer):
             # test samples from joint
             try:
                 samples = self.test_dataloader.dataset.joint.to(self.device)
+                zeros = torch.zeros_like(samples)
+                samples = torch.cat([samples, zeros], dim=-1)
             except:
                 # this is for the separate flow encoding + clf dataset
                 samples = self.test_dataloader.dataset.joint.dataset
