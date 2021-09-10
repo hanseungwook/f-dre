@@ -195,7 +195,7 @@ class GaussiansForMI(Dataset):
         self.config = config
         self.data_dir = config.training.data_dir
         self.perc = config.data.perc
-        self.dim = config.data.input_size
+        self.dim = config.data.input_size - 1
         self.split = split
 
         self.p_mu = self.config.data.mus[0]
