@@ -3,7 +3,8 @@ from PIL import Image
 import numpy as np
 import torch
 from torch.utils.data import Dataset, Subset, TensorDataset
-from torch.distributions.multivariate_normal import MultivariateNormal
+# from torch.distributions.multivariate_normal import MultivariateNormal
+from torch.distributions.normal import Normal
 from scipy.linalg import block_diag
 from .looping import LoopingDataset
 
@@ -88,12 +89,14 @@ class MIGaussians(Dataset):
         self.type in ['bias', 'ref']
 
         self.p_mu = self.config.data.mus[0]
+        self.p_scale = self.config.data.scales[0]
         self.q_mu = self.config.data.mus[1]
+        self.q_scale = self.config.data.scales[1]
         self.mi = float(config.data.mi)
         self.rho = self.mi_to_rho(self.mi) 
-        print('instantiating dataset with dim={}, rho={}, MI={}, p_mu={}, q_mu={}'.format(self.dim, self.rho, self.mi, self.p_mu, self.q_mu))
+        print('instantiating dataset with dim={}, p_mu={}, p_scale={}, q_mu={}, q_scale={}'.format(self.dim, self.p_mu, self.p_scale, self.q_mu, self.q_scale))
 
-        fpath = os.path.join(self.data_dir, 'gaussians_mi', '{}_d{}_rho{}_pmu{}_qmu{}.npz'.format(self.split, self.dim, self.rho, self.p_mu, self.q_mu))
+        fpath = os.path.join(self.data_dir, 'gaussians_mi', '{}_d{}_pmu{}_pscale{}_qmu{}_qscale{}.npz'.format(self.split, self.dim, self.p_mu, self.p_scale, self.q_mu, self.q_scale))
         try:
             record = np.load(fpath)
         except:
@@ -115,13 +118,13 @@ class MIGaussians(Dataset):
     
     def generate_data(self):
         # let's just do this to make our lives easier atm
-        fpath = os.path.join(self.data_dir, 'gaussians_mi', '{}_d{}_rho{}_pmu{}_qmu{}.npz'.format(self.split, self.dim, self.rho, self.p_mu, self.q_mu))
+        fpath = os.path.join(self.data_dir, 'gaussians_mi', '{}_d{}_pmu{}_pscale{}_qmu{}_qscale{}.npz'.format(self.split, self.dim, self.p_mu, self.p_scale, self.q_mu, self.q_scale))
         if self.split == 'train':
-            x, y = self.sample_data(100000)
+            x, y = self.sample_data(1000)
         elif self.split == 'val':
-            x, y = self.sample_data(10000)
+            x, y = self.sample_data(1000)
         else:
-            x, y = self.sample_data(10000)
+            x, y = self.sample_data(1000)
         x = x.data.numpy()
         y = y.data.numpy()
         np.savez(fpath, **{'p': x, 'q': y})
@@ -142,21 +145,15 @@ class MIGaussians(Dataset):
 
     def sample_data(self, batch_size=128):
         """Generate samples from a correlated Gaussian distribution."""
-        
-        mu1 = torch.empty((self.dim), dtype=torch.float32).fill_(self.p_mu)
-        mu2 = torch.empty((self.dim), dtype=torch.float32).fill_(self.q_mu)
 
-        scale_p = block_diag(*[[[1, self.rho], [self.rho, 1]] for _ in range(self.dim // 2)])
-        scale_q = torch.eye(self.dim, dtype=torch.float32)
-
-        p_dist = MultivariateNormal(
-            loc=mu1,
-            covariance_matrix=scale_p,
+        p_dist = Normal(
+            loc=self.p_mu,
+            scale=self.p_scale,
         )
 
-        q_dist = MultivariateNormal(
-            loc=mu2,
-            covariance_matrix=scale_q,
+        q_dist = Normal(
+            loc=self.q_mu,
+            scale=self.q_scale,
         )
 
         p_samples = p_dist.sample((batch_size,))
