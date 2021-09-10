@@ -23,7 +23,7 @@ class FlowClassifier(nn.Module):
     else:
       self.flow = MAF(5, self.in_dim, 100, 1, None, 'relu', 'sequential', batch_norm=True)
 
-    self.fc1 = nn.Linear(self.in_dim, self.h_dim)
+    self.fc1 = nn.Linear(self.in_dim - 1, self.h_dim)
     self.fc2 = nn.Linear(self.h_dim, self.h_dim)
     self.fc3 = nn.Linear(self.h_dim, self.h_dim)
     self.fc4 = nn.Linear(self.h_dim, 1)
@@ -32,6 +32,7 @@ class FlowClassifier(nn.Module):
     # map data into z-space
     z, _ = self.flow.forward(x)
 
+    z = z[:, 0]
     # then train classifier
     z = F.relu(self.fc1(z))
     z = F.relu(self.fc2(z))

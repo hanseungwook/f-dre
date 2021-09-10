@@ -150,6 +150,10 @@ class MIClassifier(BaseTrainer):
         num_neg_samples = 0
 
         for i, (z_ref, z_biased) in enumerate(data_tqdm):
+            # Augment axis 1 with all 0s
+            zeros = torch.zeros_like(z_ref)
+            z_ref = torch.cat([z_ref, zeros], dim=-1)
+            z_biased = torch.cat([z_biased, zeros], dim=-1)
             z = torch.cat([z_ref, z_biased])
             y = torch.cat([torch.ones(z_ref.shape[0]), torch.zeros(z_biased.shape[0])])
 
@@ -162,8 +166,9 @@ class MIClassifier(BaseTrainer):
             z = z[idx].to(self.device).float()
             y = y[idx].to(self.device).long()
             
-            # NOTE: here, biased (y=0) and reference (y=1)
-            logits, _ = self.model(z)
+            # NOTE: here, biased (y=0) and reference (y=1) # Only use first axis
+            logits, _ = self.model()
+            # Zero out z's second dimension to make sure loss is 0 on that axis
             if self.config.loss.name == 'joint':
                 loss = self.loss(self.model, z, logits, y, self.config.loss.alpha)
             else:
