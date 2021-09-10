@@ -159,6 +159,8 @@ class MIGaussians(Dataset):
         p_samples = p_dist.sample((batch_size,))
         q_samples = q_dist.sample((batch_size,))
 
+        print('True KL {}'.format((p_dist.log_prob(p_samples) - p_dist.log_prob(q_samples)).mean()))
+
         return p_samples, q_samples
 
     def sample_from_joint(self, n):
