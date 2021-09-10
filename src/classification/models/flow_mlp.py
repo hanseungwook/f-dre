@@ -32,7 +32,7 @@ class FlowClassifier(nn.Module):
     # map data into z-space
     z, _ = self.flow.forward(x)
 
-    z = z[:, 0]
+    z = z[:, 0].unsqueeze(-1)
     # then train classifier
     z = F.relu(self.fc1(z))
     z = F.relu(self.fc2(z))
