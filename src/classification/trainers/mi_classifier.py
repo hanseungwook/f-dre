@@ -257,7 +257,7 @@ class MIClassifier(BaseTrainer):
                 best_loss = val_loss
                 best_epoch = epoch
                 best = True
-                self.clf_diagnostics(val_labels, val_probs, val_ratios, val_data, split='val')
+                self.clf_diagnostics(val_labels, val_probs, val_ratios, val_data, split='val', epoch=epoch)
                 # self.flow_diagnostics(step=epoch, n_row=10)
             else:
                 best = False
@@ -276,7 +276,7 @@ class MIClassifier(BaseTrainer):
         self.plot_train_test_curves(tr_loss_db, test_loss_db)
         self.plot_train_test_curves(tr_acc_db, test_acc_db, metric='Accuracy', title='train_curve_acc')
         self.plot_mi(est_mi_db, self.test_dataloader.dataset.mi)
-        self.plot_logratios()
+        self.plot_logratios(epoch=(self.config.training.n_epochs+1))
         print('Completed training! Best performance at epoch {}, loss: {}, acc: {}'.format(best_epoch, best_loss, best_acc))
         # TODO: also save test metrics
         np.save(os.path.join(self.output_dir, 'tr_loss.npy'), tr_loss_db)
@@ -375,7 +375,7 @@ class MIClassifier(BaseTrainer):
 
         return loss_meter.avg, avg_acc, labels, p_y1, ratios, data
 
-    def clf_diagnostics(self, y_valid, valid_prob_pos, ratios, val_x, split):
+    def clf_diagnostics(self, y_valid, valid_prob_pos, ratios, val_x, split, epoch):
             """
             function to check (1) classifier calibration; and (2) save weights
             """
@@ -402,6 +402,8 @@ class MIClassifier(BaseTrainer):
             # save density ratios
             np.savez(
                 os.path.join(self.output_dir, f'{split}_ratios.npz'), **{'ratios': ratios, 'd_labels': y_valid, 'data': val_x})
+
+            self.plot_logratios(epoch=epoch)
 
     def plot_train_test_curves(self, tr_loss, test_loss, metric='Loss', title='train_curve_loss'):
         sns.set_context('paper', font_scale=2)
@@ -442,7 +444,7 @@ class MIClassifier(BaseTrainer):
         plt.savefig(
             os.path.join(self.output_dir, '{}.png'.format(title)), dpi=200)
     
-    def plot_logratios(self, num_samples=1000):
+    def plot_logratios(self, num_samples=1000, epoch=0):
         # Getting p and q dists
         p_dist, q_dist = self.train_dataloader.dataset.p_dist, self.train_dataloader.dataset.q_dist
 
@@ -474,7 +476,9 @@ class MIClassifier(BaseTrainer):
 
         plt.tight_layout()
         plt.savefig(
-            os.path.join(self.output_dir, 'log_ratios_plot.png'))
+            os.path.join(self.output_dir, 'log_ratios_plot_epoch{}.png'.format(epoch)))
+        
+        print('Saved logratios plot')
 
 
     def flow_diagnostics(self, step, n_row=10):
