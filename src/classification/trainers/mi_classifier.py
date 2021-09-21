@@ -459,8 +459,8 @@ class MIClassifier(BaseTrainer):
         self.model.eval()
         with torch.no_grad():
             zeros = torch.zeros_like(samples)
-            samples = torch.cat([samples, zeros], dim=-1).to(self.device)
-            logits, probas = self.model(samples)
+            samples0 = torch.cat([samples, zeros], dim=-1).to(self.device)
+            logits, probas = self.model(samples0)
         self.model.train()
         est_kl = -1.0 * logits.squeeze().cpu()
 
