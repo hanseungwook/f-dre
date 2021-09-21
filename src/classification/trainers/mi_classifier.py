@@ -465,8 +465,8 @@ class MIClassifier(BaseTrainer):
         est_kl = -1.0 * logits.squeeze().cpu()
 
         y = np.random.random((num_samples))
-        scat1 = ax2.scatter(samples,true_kl,label='True Log p/q, KL = '+str(np.around(true_kl.mean().item(),2)),alpha=0.9,s=10.,c='b')
-        scat2 = ax2.scatter(samples,est_kl,label='CoB Log p/q, KL = '+str(np.around(est_kl.mean().item(),2)),alpha=0.9,s=10.,c='r')
+        scat1 = ax2.scatter(samples,true_kl,label='True Log p/q, KL = '+str(np.around(true_kl.cpu().mean().item(),2)),alpha=0.9,s=10.,c='b')
+        scat2 = ax2.scatter(samples,est_kl,label='CoB Log p/q, KL = '+str(np.around(est_kl.cpu().mean().item(),2)),alpha=0.9,s=10.,c='r')
 
         # scat1.set_offsets(np.vstack([samples, log_ratio_p_q.cpu().detach()]).T)
         # scat2.set_offsets(np.vstack([samples, log_ratio_p_q_from_cob.cpu().detach()]).T)                    
