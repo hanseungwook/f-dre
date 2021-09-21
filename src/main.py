@@ -212,7 +212,7 @@ def main():
                     trainer.clf_diagnostics(test_labels, test_probs, test_ratios, test_data, 'test')
                 else:
                     test_loss, test_acc, test_labels, test_probs, test_ratios, test_data = trainer.test('test')
-                    trainer.clf_diagnostics(test_labels, test_probs, test_ratios, test_data, 'test')
+                    trainer.clf_diagnostics(test_labels, test_probs, test_ratios, test_data, 'test', epoch='test')
     
     except Exception:
         logging.error(traceback.format_exc())
