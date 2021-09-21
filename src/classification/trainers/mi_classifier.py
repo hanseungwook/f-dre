@@ -457,12 +457,24 @@ class MIClassifier(BaseTrainer):
         p_scale = self.train_dataloader.dataset.p_scale
         q_scale = self.train_dataloader.dataset.q_scale
 
-        m_dist = MixtureSameFamily(
+
+        # m_dist = torch.distributions.uniform.Uniform(-20, 20)
+        m_dist1 = MixtureSameFamily(
             D.Categorical(torch.Tensor([0.5, 0.5])),
             D.Independent(D.Normal(torch.Tensor([p_mu, q_mu]), torch.Tensor([p_scale, q_scale])),0))
 
-        # m_dist = torch.distributions.uniform.Uniform(-20, 20)
-        samples = m_dist.sample([num_samples]).unsqueeze(-1)
+        m_dist2 = MixtureSameFamily(
+            D.Categorical(torch.Tensor([0.5, 0.5])),
+            D.Independent(D.Normal(torch.Tensor([p_mu, q_mu]), torch.Tensor([p_scale, q_scale])),0))
+
+        m_dist3 = MixtureSameFamily(
+            D.Categorical(torch.Tensor([0.5, 0.5])),
+            D.Independent(D.Normal(torch.Tensor([p_mu, q_mu]), torch.Tensor([p_scale, q_scale])),0))
+
+        m_dists = [p_dist, q_dist, m_dist1, m_dist2, m_dist3]
+
+        
+        samples = torch.cat([m.sample([num_samples // len(m_dists)]).unsqueeze(-1) for m in m_dists],dim=0)
 
         # Set up viz
         fig, ax2 = plt.subplots(1, 1,figsize=(6,4))
