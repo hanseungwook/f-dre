@@ -10,6 +10,7 @@ training:
 
 data:
   dataset: "MI"
+  num_samples: 100000
   subset: false
   x_space: true
   input_size: 2 # n_dims

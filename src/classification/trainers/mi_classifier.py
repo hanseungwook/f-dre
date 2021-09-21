@@ -458,15 +458,15 @@ class MIClassifier(BaseTrainer):
         q_scale = self.train_dataloader.dataset.q_scale
 
 
-        # m_dist = torch.distributions.uniform.Uniform(-20, 20)
-        # samples = m_dist.sample([num_samples]).unsqueeze(-1)
+        m_dist = torch.distributions.uniform.Uniform(-20, 20)
+        samples = m_dist.sample([num_samples]).unsqueeze(-1)
 
 
-        alphas = torch.from_numpy(np.tile(torch.Tensor([0.0,6.103515625e-05,0.0078125,0.13348388671875,1.0]), (num_samples // 5,)))
+#         alphas = torch.from_numpy(np.tile(torch.Tensor([0.0,6.103515625e-05,0.0078125,0.13348388671875,1.0]), (num_samples // 5,)))
             
-#             alphas = torch.tile(torch.Tensor([0., 0.5, 0.75, 0.75, 1.0]), (num_samples // 5,)).unsqueeze(1)
-        samples = torch.sqrt(1-alphas**2)*p_dist.sample([num_samples]) + alphas*q_dist.sample([num_samples])
-        samples = samples.unsqueeze(-1)
+# #             alphas = torch.tile(torch.Tensor([0., 0.5, 0.75, 0.75, 1.0]), (num_samples // 5,)).unsqueeze(1)
+#         samples = torch.sqrt(1-alphas**2)*p_dist.sample([num_samples]) + alphas*q_dist.sample([num_samples])
+#         samples = samples.unsqueeze(-1)
         # m_dist1 = MixtureSameFamily(
         #     D.Categorical(torch.Tensor([0.5, 0.5])),
         #     D.Independent(D.Normal(torch.Tensor([p_mu, q_mu]), torch.Tensor([p_scale, q_scale])),0))
