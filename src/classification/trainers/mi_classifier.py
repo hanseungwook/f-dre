@@ -504,8 +504,8 @@ class MIClassifier(BaseTrainer):
         est_kl_from_p = -1.0 * logits_p.squeeze().cpu()
 
         y = np.random.random((num_samples))
-        scat1 = ax2.scatter(samples.squeeze().cpu(),true_kl.squeeze().cpu(),label='True Log p/q, KL = '+str(np.around(self.train_dataloader.dataset.mi.item(),2)),alpha=0.9,s=10.,c='b')
-        scat2 = ax2.scatter(samples.squeeze().cpu(),est_kl.squeeze().cpu(),label='f-dre Log p/q, KL = '+str(np.around(est_kl_from_p.cpu().mean().item(),2)),alpha=0.9,s=10.,c='r')
+        scat1 = ax2.scatter(samples.squeeze().cpu(),true_kl.squeeze().cpu(),label='True Log p/q, KL = {}'.format(np.around(self.train_dataloader.dataset.mi,2)),alpha=0.9,s=10.,c='b')
+        scat2 = ax2.scatter(samples.squeeze().cpu(),est_kl.squeeze().cpu(),label='f-dre Log p/q, KL = {}'.format(np.around(est_kl_from_p.cpu().mean().item(),2)),alpha=0.9,s=10.,c='r')
 
         # scat1.set_offsets(np.vstack([samples, log_ratio_p_q.cpu().detach()]).T)
         # scat2.set_offsets(np.vstack([samples, log_ratio_p_q_from_cob.cpu().detach()]).T)                    
