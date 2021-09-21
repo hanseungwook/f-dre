@@ -460,22 +460,28 @@ class MIClassifier(BaseTrainer):
 
         # m_dist = torch.distributions.uniform.Uniform(-20, 20)
         # samples = m_dist.sample([num_samples]).unsqueeze(-1)
-        m_dist1 = MixtureSameFamily(
-            D.Categorical(torch.Tensor([0.5, 0.5])),
-            D.Independent(D.Normal(torch.Tensor([p_mu, q_mu]), torch.Tensor([p_scale, q_scale])),0))
 
-        m_dist2 = MixtureSameFamily(
-            D.Categorical(torch.Tensor([0.25, 0.75])),
-            D.Independent(D.Normal(torch.Tensor([p_mu, q_mu]), torch.Tensor([p_scale, q_scale])),0))
 
-        m_dist3 = MixtureSameFamily(
-            D.Categorical(torch.Tensor([0.75, 0.25])),
-            D.Independent(D.Normal(torch.Tensor([p_mu, q_mu]), torch.Tensor([p_scale, q_scale])),0))
+        alphas = torch.from_numpy(np.tile(torch.Tensor([0.0,6.103515625e-05,0.0078125,0.13348388671875,1.0]), (num_samples // 5,)))
+            
+#             alphas = torch.tile(torch.Tensor([0., 0.5, 0.75, 0.75, 1.0]), (num_samples // 5,)).unsqueeze(1)
+        samples = torch.sqrt(1-alphas**2)*p_dist.sample([num_samples]).unsqueeze(-1) + alphas*q_dist.sample([num_samples]).unsqueeze(-1)
+        # m_dist1 = MixtureSameFamily(
+        #     D.Categorical(torch.Tensor([0.5, 0.5])),
+        #     D.Independent(D.Normal(torch.Tensor([p_mu, q_mu]), torch.Tensor([p_scale, q_scale])),0))
 
-        m_dists = [p_dist, q_dist, m_dist1, m_dist2, m_dist3]
+        # m_dist2 = MixtureSameFamily(
+        #     D.Categorical(torch.Tensor([0.25, 0.75])),
+        #     D.Independent(D.Normal(torch.Tensor([p_mu, q_mu]), torch.Tensor([p_scale, q_scale])),0))
+
+        # m_dist3 = MixtureSameFamily(
+        #     D.Categorical(torch.Tensor([0.75, 0.25])),
+        #     D.Independent(D.Normal(torch.Tensor([p_mu, q_mu]), torch.Tensor([p_scale, q_scale])),0))
+
+        # m_dists = [p_dist, q_dist, m_dist1, m_dist2, m_dist3]
 
         
-        samples = torch.cat([m.sample([num_samples // len(m_dists)]).unsqueeze(-1) for m in m_dists],dim=0)
+        # samples = torch.cat([m.sample([num_samples // len(m_dists)]).unsqueeze(-1) for m in m_dists],dim=0)
 
         # Set up viz
         fig, ax2 = plt.subplots(1, 1,figsize=(6,4))
