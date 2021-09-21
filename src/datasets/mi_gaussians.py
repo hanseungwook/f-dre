@@ -203,16 +203,16 @@ class GaussiansForMI(Dataset):
         self.q_mu = self.config.data.mus[1]
         self.q_scale = self.config.data.scales[1]
 
-        p_dist = Normal(
+        self.p_dist = Normal(
             loc=self.p_mu,
             scale=self.p_scale,
         )
 
-        q_dist = Normal(
+        self.q_dist = Normal(
             loc=self.q_mu,
             scale=self.q_scale,
         )
-        self.mi = torch.distributions.kl_divergence(p_dist, q_dist).mean().item()
+        self.mi = torch.distributions.kl_divergence(self.p_dist, self.q_dist).mean().item()
         # self.rho = self.mi_to_rho() # Uses saved self.mi variable above
         print('instantiating dataset with dim={}, p_mu={}, p_scale={}, q_mu={}, q_scale={}'.format(self.dim, self.p_mu, self.p_scale, self.q_mu, self.q_scale))
 

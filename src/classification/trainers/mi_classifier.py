@@ -276,6 +276,7 @@ class MIClassifier(BaseTrainer):
         self.plot_train_test_curves(tr_loss_db, test_loss_db)
         self.plot_train_test_curves(tr_acc_db, test_acc_db, metric='Accuracy', title='train_curve_acc')
         self.plot_mi(est_mi_db, self.test_dataloader.dataset.mi)
+        self.plot_logratios()
         print('Completed training! Best performance at epoch {}, loss: {}, acc: {}'.format(best_epoch, best_loss, best_acc))
         # TODO: also save test metrics
         np.save(os.path.join(self.output_dir, 'tr_loss.npy'), tr_loss_db)
@@ -440,6 +441,41 @@ class MIClassifier(BaseTrainer):
         plt.tight_layout()
         plt.savefig(
             os.path.join(self.output_dir, '{}.png'.format(title)), dpi=200)
+    
+    def plot_logratios(self, num_samples=1000):
+        # Getting p and q dists
+        p_dist, q_dist = self.train_dataloader.dataset.p_dist, self.train_dataloader.dataset.q_dist
+
+        student_t_dist = torch.distributions.studentT.StudentT(1, loc=0.0, scale=1.0)
+        samples = student_t_dist.sample([num_samples])
+
+        # Set up viz
+        fig, ax2 = plt.subplots(1, 1,figsize=(6,4))
+
+        true_kl = p_dist.log_prob(samples) - q_dist.log_prob(samples)
+
+        self.model.eval()
+        with torch.no_grad():
+            logits, probas = self.model(samples)
+        self.model.train()
+        est_kl = -1.0 * logits.squeeze()
+
+        y = np.random.random((num_samples))
+        scat1 = ax2.scatter(samples,true_kl,label='True Log p/q, KL = '+str(np.around(true_kl.mean().item(),2)),alpha=0.9,s=10.,c='b')
+        scat2 = ax2.scatter(samples,est_kl,label='CoB Log p/q, KL = '+str(np.around(est_kl.mean().item(),2)),alpha=0.9,s=10.,c='r')
+
+        # scat1.set_offsets(np.vstack([samples, log_ratio_p_q.cpu().detach()]).T)
+        # scat2.set_offsets(np.vstack([samples, log_ratio_p_q_from_cob.cpu().detach()]).T)                    
+
+        ax2.set_ylabel("Log Ratio")
+        ax2.legend(loc='best')
+        ax2.set_xlim([-25,25])
+        ax2.set_ylim([-1000,1000])
+
+        plt.tight_layout()
+        plt.savefig(
+            os.path.join(self.output_dir, 'log_ratios_plot.png'))
+
 
     def flow_diagnostics(self, step, n_row=10):
         self.model.eval()
