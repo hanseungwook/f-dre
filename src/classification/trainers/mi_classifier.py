@@ -511,7 +511,7 @@ class MIClassifier(BaseTrainer):
         # scat2.set_offsets(np.vstack([samples, log_ratio_p_q_from_cob.cpu().detach()]).T)                    
 
         ax2.set_ylabel("Log Ratio")
-        ax2.legend(loc='best')
+        ax2.legend(loc='upper right', frameon=True)
         ax2.set_xlim([-25,25])
         ax2.set_ylim([-1000,1000])
 
