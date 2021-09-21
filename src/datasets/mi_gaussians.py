@@ -87,6 +87,8 @@ class MIGaussians(Dataset):
         self.split = split
         self.type = typ
         self.type in ['bias', 'ref']
+        
+        self.num_samples = self.config.data.num_samples
 
         self.p_mu = self.config.data.mus[0]
         self.p_scale = self.config.data.scales[0]
@@ -120,11 +122,11 @@ class MIGaussians(Dataset):
         # let's just do this to make our lives easier atm
         fpath = os.path.join(self.data_dir, 'gaussians_mi', '{}_d{}_pmu{}_pscale{}_qmu{}_qscale{}.npz'.format(self.split, self.dim, self.p_mu, self.p_scale, self.q_mu, self.q_scale))
         if self.split == 'train':
-            x, y = self.sample_data(1000)
+            x, y = self.sample_data(self.num_samples // 2)
         elif self.split == 'val':
-            x, y = self.sample_data(1000)
+            x, y = self.sample_data(self.num_samples // 2)
         else:
-            x, y = self.sample_data(1000)
+            x, y = self.sample_data(self.num_samples // 2)
         x = x.data.numpy()
         y = y.data.numpy()
         np.savez(fpath, **{'p': x, 'q': y})
