@@ -27,6 +27,8 @@ import torch.nn.functional as F
 import torchvision
 from torchvision import datasets, transforms
 import torch.utils.data as data_utils
+import torch.distributions as D
+from torch.distributions.mixture_same_family import MixtureSameFamily
 
 import matplotlib
 matplotlib.use('Agg')
@@ -449,7 +451,17 @@ class MIClassifier(BaseTrainer):
         p_dist, q_dist = self.train_dataloader.dataset.p_dist, self.train_dataloader.dataset.q_dist
 
         p_samples = p_dist.sample([num_samples]).unsqueeze(-1)
-        m_dist = torch.distributions.uniform.Uniform(-20, 20)
+
+        p_mu = self.train_dataloader.dataset.p_mu
+        q_mu = self.train_dataloader.dataset.p_scale
+        p_scale = self.train_dataloader.dataset.p_scale
+        q_scale = self.train_dataloader.dataset.q_scale
+
+        m_dist = MixtureSameFamily(
+            D.Categorical(torch.Tensor([0.5, 0.5])),
+            D.Independent(D.Normal(torch.Tensor([p_mu, q_mu]), torch.Tensor([p_scale, q_scale])),0))
+
+        # m_dist = torch.distributions.uniform.Uniform(-20, 20)
         samples = m_dist.sample([num_samples]).unsqueeze(-1)
 
         # Set up viz
