@@ -449,7 +449,7 @@ class MIClassifier(BaseTrainer):
         p_dist, q_dist = self.train_dataloader.dataset.p_dist, self.train_dataloader.dataset.q_dist
 
         student_t_dist = torch.distributions.studentT.StudentT(1, loc=0.0, scale=1.0)
-        samples = student_t_dist.sample([num_samples])
+        samples = student_t_dist.sample([num_samples]).unsqueeze(-1)
 
         # Set up viz
         fig, ax2 = plt.subplots(1, 1,figsize=(6,4))
