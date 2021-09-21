@@ -444,13 +444,13 @@ class MIClassifier(BaseTrainer):
         plt.savefig(
             os.path.join(self.output_dir, '{}.png'.format(title)), dpi=200)
     
-    def plot_logratios(self, num_samples=1000, epoch=0):
+    def plot_logratios(self, num_samples=10000, epoch=0):
         # Getting p and q dists
         p_dist, q_dist = self.train_dataloader.dataset.p_dist, self.train_dataloader.dataset.q_dist
 
         p_samples = p_dist.sample([num_samples]).unsqueeze(-1)
-        student_t_dist = torch.distributions.studentT.StudentT(1, loc=0.0, scale=1.0)
-        samples = student_t_dist.sample([num_samples]).unsqueeze(-1)
+        m_dist = torch.distributions.uniform.Uniform(-20, 20)
+        samples = m_dist.sample([num_samples]).unsqueeze(-1)
 
         # Set up viz
         fig, ax2 = plt.subplots(1, 1,figsize=(6,4))
@@ -464,12 +464,12 @@ class MIClassifier(BaseTrainer):
             logits, probas = self.model(samples0)
 
             samples1 = torch.cat([p_samples, zeros], dim=-1).to(self.device)
-            logits1, probas = self.model(samples1)
+            logits_p, probas = self.model(samples1)
 
 
         self.model.train()
         est_kl = -1.0 * logits.squeeze().cpu()
-        est_kl_from_p = -1.0 * logits.squeeze().cpu()
+        est_kl_from_p = -1.0 * logits_p.squeeze().cpu()
 
         y = np.random.random((num_samples))
         scat1 = ax2.scatter(samples.squeeze().cpu(),true_kl.squeeze().cpu(),label='True Log p/q, KL = '+str(np.around(self.train_dataloader.dataset.mi,2)),alpha=0.9,s=10.,c='b')
