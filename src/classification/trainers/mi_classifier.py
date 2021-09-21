@@ -458,9 +458,9 @@ class MIClassifier(BaseTrainer):
 
         self.model.eval()
         with torch.no_grad():
-            logits, probas = self.model(samples)
+            logits, probas = self.model(samples.to(self.device))
         self.model.train()
-        est_kl = -1.0 * logits.squeeze()
+        est_kl = -1.0 * logits.squeeze().cpu()
 
         y = np.random.random((num_samples))
         scat1 = ax2.scatter(samples,true_kl,label='True Log p/q, KL = '+str(np.around(true_kl.mean().item(),2)),alpha=0.9,s=10.,c='b')
