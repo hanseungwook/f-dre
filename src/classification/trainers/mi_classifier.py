@@ -405,7 +405,8 @@ class MIClassifier(BaseTrainer):
             np.savez(
                 os.path.join(self.output_dir, f'{split}_ratios.npz'), **{'ratios': ratios, 'd_labels': y_valid, 'data': val_x})
 
-            self.plot_logratios(epoch=epoch)
+            # TODO: change this fn
+            self.save_logratios(epoch=epoch)
 
     def plot_train_test_curves(self, tr_loss, test_loss, metric='Loss', title='train_curve_loss'):
         sns.set_context('paper', font_scale=2)
@@ -520,6 +521,31 @@ class MIClassifier(BaseTrainer):
             os.path.join(self.output_dir, 'log_ratios_plot_epoch{}.png'.format(epoch)))
         
         print('Saved logratios plot')
+
+    def save_logratios(self, epoch=0):
+            domain_samples = np.load(self.config.training.domain_samples_path)
+            outdomain_samples = np.load(self.config.training.outdomain_samples_path)
+
+            domain_samples = domain_samples.unsqueeze(-1)
+            outdomain_samples = outdomain_samples.unsqueeze(-1)
+
+            self.model.eval()
+            with torch.no_grad():
+                zeros = torch.zeros_like(domain_samples)
+                samples0 = torch.cat([domain_samples, zeros], dim=-1).to(self.device)
+                logits_indom, probas = self.model(samples0)
+
+                samples1 = torch.cat([outdomain_samples, zeros], dim=-1).to(self.device)
+                logits_outdom, probas = self.model(samples1)
+
+
+            self.model.train()
+            est_logratio_dom = -1.0 * logits_indom.squeeze().cpu()
+            est_logratio_outdom = -1.0 * logits_outdom.squeeze().cpu()
+
+            np.save(os.path.join(self.output_dir, 'fdre_1d_mu_{}_{}_domain_estimated_ratio_epoch{}.npy'.format(self.config.data.mus[0], self.config.data.mus[1], epoch)), est_logratio_dom.numpy())
+            np.save(os.path.join(self.output_dir, 'fdre_1d_mu_{}_{}_outdomain_estimated_ratio_epoch{}.npy'.format(self.config.data.mus[0], self.config.data.mus[1], epoch)), est_logratio_outdom.numpy())
+            print('Saved logratios (domain & outdomain)')
 
 
     def flow_diagnostics(self, step, n_row=10):
