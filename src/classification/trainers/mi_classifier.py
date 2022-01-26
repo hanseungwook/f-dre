@@ -523,8 +523,8 @@ class MIClassifier(BaseTrainer):
         print('Saved logratios plot')
 
     def save_logratios(self, epoch=0):
-            domain_samples = torch.from_numpy(np.load(self.config.training.domain_samples_path))
-            outdomain_samples = torch.from_numpy(np.load(self.config.training.outdomain_samples_path))
+            domain_samples = torch.from_numpy(np.load(self.config.training.domain_samples_path)).float()
+            outdomain_samples = torch.from_numpy(np.load(self.config.training.outdomain_samples_path)).float()
 
             domain_samples = domain_samples.unsqueeze(-1)
             outdomain_samples = outdomain_samples.unsqueeze(-1)
